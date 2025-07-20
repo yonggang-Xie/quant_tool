@@ -30,6 +30,14 @@ from .quantizer import (
     quantize_model
 )
 
+from .advanced_quantizers import (
+    AdaRoundQuantizer,
+    AdaQuantQuantizer,
+    AdaRoundConfig,
+    AdaQuantConfig,
+    FastFineTuneFramework
+)
+
 from .utils import (
     calculate_model_size,
     benchmark_inference,
@@ -59,6 +67,13 @@ __all__ = [
     'QuantizedLinear', 
     'QuantizedConv2d',
     'quantize_model',
+    
+    # Advanced quantization
+    'AdaRoundQuantizer',
+    'AdaQuantQuantizer',
+    'AdaRoundConfig',
+    'AdaQuantConfig',
+    'FastFineTuneFramework',
     
     # Utilities
     'calculate_model_size',

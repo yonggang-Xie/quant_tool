@@ -6,11 +6,13 @@ A comprehensive toolkit for implementing int8 quantization in PyTorch models wit
 
 - **Custom Int8 Quantization**: Implementation of symmetric and asymmetric quantization schemes
 - **Per-tensor and Per-channel Quantization**: Support for both quantization granularities
+- **Advanced Quantization Methods**: AdaRound and AdaQuant implementations for improved accuracy
 - **Quantized Layers**: Custom implementations of QuantizedLinear and QuantizedConv2d layers
 - **Model Analysis**: Comprehensive tools for analyzing quantization effects
 - **Performance Benchmarking**: Tools to measure model size reduction and inference speedup
 - **Sample Models**: Various neural network architectures for testing
 - **Visualization**: Tools to visualize quantization effects (optional with matplotlib)
+- **Fast Fine-tune Framework**: Unified framework for post-training quantization optimization
 
 ## Installation
 
@@ -117,6 +119,74 @@ quantized = round(tensor / scale + zero_point)
 - **Per-tensor**: Single scale/zero-point for entire tensor
 - **Per-channel**: Separate scale/zero-point for each channel (better accuracy)
 
+## Advanced Quantization Methods
+
+### AdaRound (Adaptive Rounding)
+AdaRound learns optimal rounding decisions for each weight instead of using standard rounding:
+
+```python
+from quant_tool import AdaRoundQuantizer, AdaRoundConfig
+
+# Configure AdaRound
+config = AdaRoundConfig(
+    num_iterations=10000,
+    learning_rate=1e-3,
+    beta_range=(20, 2)
+)
+
+# Create AdaRound quantizer
+quantizer = AdaRoundQuantizer(
+    symmetric=False, 
+    per_channel=True,
+    config=config
+)
+
+# Train adaptive rounding (simplified example)
+quantizer.calibrate(weights)
+stats = quantizer.train_rounding(weights, target_output, layer_forward_fn)
+```
+
+### AdaQuant (Adaptive Quantization)
+AdaQuant optimizes quantization parameters (scale and zero-point) for minimal reconstruction error:
+
+```python
+from quant_tool import AdaQuantQuantizer, AdaQuantConfig
+
+# Configure AdaQuant
+config = AdaQuantConfig(
+    num_iterations=1000,
+    learning_rate=1e-2,
+    selective_update=True
+)
+
+# Create AdaQuant quantizer
+quantizer = AdaQuantQuantizer(
+    symmetric=False,
+    per_channel=True,
+    config=config
+)
+
+# Optimize quantization parameters
+stats = quantizer.optimize_parameters(weights, activations, target_output, layer_forward_fn)
+```
+
+### Fast Fine-tune Framework
+Unified framework for applying AdaRound and AdaQuant to entire models:
+
+```python
+from quant_tool import FastFineTuneFramework, AdaRoundConfig
+
+# Create framework
+framework = FastFineTuneFramework(
+    method='adaround',  # or 'adaquant'
+    config=AdaRoundConfig()
+)
+
+# Fine-tune entire model
+stats = framework.finetune_model(model, calibration_data, validation_data)
+print(f"Improved {stats['layers_improved']}/{stats['layers_processed']} layers")
+```
+
 ## Examples
 
 Run the provided examples to see the quantization tool in action:
@@ -127,6 +197,12 @@ python examples/basic_quantization.py
 
 # Model quantization and comparison
 python examples/model_comparison.py
+
+# AdaRound demonstration
+python examples/adaround_demo.py
+
+# AdaQuant demonstration
+python examples/adaquant_demo.py
 ```
 
 ## API Reference
@@ -230,4 +306,7 @@ If you use this tool in your research, please cite:
 
 - [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference](https://arxiv.org/abs/1712.05877)
 - [Integer Quantization for Deep Learning Inference: Principles and Empirical Evaluation](https://arxiv.org/abs/2004.09602)
+- [Up or Down? Adaptive Rounding for Post-Training Quantization (AdaRound)](https://arxiv.org/abs/2004.10568)
+- [Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference (AdaQuant)](https://arxiv.org/abs/1712.01048)
 - [PyTorch Quantization Documentation](https://pytorch.org/docs/stable/quantization.html)
+- [AMD Quark AdaRound/AdaQuant Tutorial](https://quark.docs.amd.com/release-0.5.0/onnx/tutorial_adaround_adaquant.html)
